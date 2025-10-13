@@ -132,14 +132,14 @@ class ApiClient {
 
   // Recuperación de contraseña
   async requestPasswordReset(email: string) {
-    return this.request('/api/auth/forgot-password', {
+    return this.request('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
   }
 
   async resetPassword(token: string, newPassword: string) {
-    return this.request('/api/auth/reset-password', {
+    return this.request('/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, newPassword }),
     });
