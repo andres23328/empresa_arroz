@@ -37,6 +37,9 @@ class ApiClient {
       ...options,
       headers,
     });
+    console.log('Response:', response);
+    console.log('Request URL:', url);
+    console.log('Request options:', { ...options, headers });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Network error' }));
@@ -138,7 +141,7 @@ class ApiClient {
     });
   }
 
-  
+
   async resetPassword(token: string, newPassword: string) {
     return this.request('/auth/reset-password', {
       method: 'POST',
