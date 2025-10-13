@@ -2,15 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from backend folder
+COPY backend/package*.json ./
 
 # Install dependencies
 RUN npm install --omit=dev
-#hola
-# Copy source code
-COPY src/ ./src/
 
+# Copy source code
+COPY backend/src ./src
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -29,5 +28,3 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start the application
 CMD ["npm", "start"]
-
-
