@@ -1,0 +1,7 @@
+# Archivos de configuración sensibles
+.env
+*.env
+*.json
+backend/.env
+backend/env.example
+backend/empresa-arroz.json

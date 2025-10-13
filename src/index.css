@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Rice mill theme - earthy, agricultural colors */
+    --background: 45 30% 96%;
+    --foreground: 30 25% 15%;
+
+    --card: 45 35% 98%;
+    --card-foreground: 30 25% 15%;
+
+    --popover: 45 35% 98%;
+    --popover-foreground: 30 25% 15%;
+
+    /* Primary: Rich golden brown (rice grains) */
+    --primary: 35 55% 45%;
+    --primary-foreground: 45 30% 98%;
+
+    /* Secondary: Green (rice fields) */
+    --secondary: 95 35% 45%;
+    --secondary-foreground: 45 30% 98%;
+
+    /* Muted: Light sand */
+    --muted: 40 25% 88%;
+    --muted-foreground: 30 20% 40%;
+
+    /* Accent: Amber (harvest) */
+    --accent: 40 65% 55%;
+    --accent-foreground: 30 25% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 30% 98%;
+
+    --border: 40 20% 85%;
+    --input: 40 20% 85%;
+    --ring: 35 55% 45%;
+
+    --radius: 0.75rem;
+
+    /* Success: Deep green */
+    --success: 120 40% 40%;
+    --success-foreground: 45 30% 98%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(35 55% 45%), hsl(40 65% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(95 35% 45%), hsl(100 40% 50%));
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 8px hsla(30 25% 15% / 0.1);
+    --shadow-medium: 0 4px 16px hsla(30 25% 15% / 0.12);
+    
+    /* Sidebar */
+    --sidebar-background: 45 35% 98%;
+    --sidebar-foreground: 30 25% 20%;
+    --sidebar-primary: 35 55% 45%;
+    --sidebar-primary-foreground: 45 30% 98%;
+    --sidebar-accent: 40 25% 92%;
+    --sidebar-accent-foreground: 30 25% 20%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 35 55% 45%;
+  }
+
+  .dark {
+    --background: 30 25% 12%;
+    --foreground: 45 30% 95%;
+
+    --card: 30 25% 15%;
+    --card-foreground: 45 30% 95%;
+
+    --popover: 30 25% 15%;
+    --popover-foreground: 45 30% 95%;
+
+    --primary: 40 65% 55%;
+    --primary-foreground: 30 25% 12%;
+
+    --secondary: 95 30% 35%;
+    --secondary-foreground: 45 30% 95%;
+
+    --muted: 30 20% 20%;
+    --muted-foreground: 45 20% 65%;
+
+    --accent: 40 70% 60%;
+    --accent-foreground: 30 25% 12%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 45 30% 95%;
+
+    --border: 30 20% 25%;
+    --input: 30 20% 25%;
+    --ring: 40 65% 55%;
+    
+    --success: 120 35% 45%;
+    --success-foreground: 45 30% 95%;
+    
+    --sidebar-background: 30 25% 15%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 40 65% 55%;
+    --sidebar-primary-foreground: 30 25% 12%;
+    --sidebar-accent: 30 20% 22%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 30 20% 25%;
+    --sidebar-ring: 40 65% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
