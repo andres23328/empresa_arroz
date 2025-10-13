@@ -7,9 +7,10 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install --omit=dev
-
+#hola
 # Copy source code
 COPY src/ ./src/
+
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
