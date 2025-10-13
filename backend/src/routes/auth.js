@@ -6,6 +6,8 @@ import { generateToken } from '../middleware/auth.js';
 import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { Resend } from "resend";
+
 
 
 const router = express.Router();
@@ -142,7 +144,7 @@ router.get('/me', async (req, res) => {
 });
 
 
-// 🔹 Enviar correo de recuperación
+// 🔹 Enviar correo de recuperación con Resend
 router.post("/forgot-password", async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -165,31 +167,29 @@ router.post("/forgot-password", async (req, res, next) => {
       resetTokenExpiry,
     });
 
-    // 🔹 Configura Nodemailer
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    // ✅ Configura Resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     const resetLink = `https://empresa-arroz.vercel.app/reset-password?token=${resetToken}`;
 
-    await transporter.sendMail({
-      from: `"Molino de Arroz RH" <${process.env.EMAIL_USER}>`,
+    // ✅ Envía el correo
+    const response = await resend.emails.send({
+      from: "Molino de Arroz RH <onboarding@resend.dev>", // puedes usar un dominio verificado más adelante
       to: email,
       subject: "Recuperación de contraseña",
       html: `
         <h3>Recuperar contraseña</h3>
         <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
-        <a href="${resetLink}">${resetLink}</a>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
         <p>Este enlace expira en 1 hora.</p>
       `,
     });
 
+    console.log("📩 Resend response:", response);
+
     res.json({ message: "Correo de recuperación enviado correctamente" });
   } catch (error) {
+    console.error("❌ Error en forgot-password:", error);
     next(error);
   }
 });
