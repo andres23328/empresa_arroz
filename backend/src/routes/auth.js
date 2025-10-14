@@ -4,7 +4,6 @@ import { body, validationResult } from 'express-validator';
 import db from '../config/firebase.js';
 import { generateToken } from '../middleware/auth.js';
 import jwt from 'jsonwebtoken';
-import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { Resend } from "resend";
 
