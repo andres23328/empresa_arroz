@@ -147,6 +147,7 @@ router.get('/me', async (req, res) => {
 router.post("/forgot-password", async (req, res, next) => {
   try {
     const { email } = req.body;
+    console.log("Email recibido:", email);
 
     if (!email) return res.status(400).json({ error: "Email is required" });
 
@@ -159,21 +160,15 @@ router.post("/forgot-password", async (req, res, next) => {
 
     const userDoc = userQuery.docs[0];
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hora
+    const resetTokenExpiry = Date.now() + 3600000;
 
-    await userDoc.ref.update({
-      resetToken,
-      resetTokenExpiry,
-    });
+    await userDoc.ref.update({ resetToken, resetTokenExpiry });
 
-    // ✅ Configura Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
-
     const resetLink = `https://empresa-arroz.vercel.app/reset-password?token=${resetToken}`;
 
-    // ✅ Envía el correo
     const response = await resend.emails.send({
-      from: "Molino de Arroz RH <onboarding@resend.dev>", // puedes usar un dominio verificado más adelante
+      from: "Molino de Arroz RH <onboarding@resend.dev>",
       to: email,
       subject: "Recuperación de contraseña",
       html: `
