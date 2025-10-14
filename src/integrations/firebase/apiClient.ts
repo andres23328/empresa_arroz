@@ -16,7 +16,7 @@ class ApiClient {
       localStorage.setItem('authToken', token);
     } else {
       localStorage.removeItem('authToken');
-      
+
     }
   }
 

@@ -115,8 +115,8 @@ router.post(
       const contratoData = {
         ...data,
         ...(req.userId ? { createdBy: req.userId } : {}), // solo agrega si existe
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        fecha_creacion: new Date(),      // en lugar de createdAt
+        fecha_actualizacion: new Date(), // en lugar de updatedAt
       };
       
 
@@ -166,7 +166,7 @@ router.put(
 
       const updateData = {
         ...req.body,
-        updatedAt: new Date(),
+        fecha_actualizacion: data.fecha_actualizacion || new Date(), // solo si no existe
       };
 
       await contratoRef.update(updateData);
