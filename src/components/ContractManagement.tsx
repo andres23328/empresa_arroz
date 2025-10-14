@@ -131,6 +131,7 @@ const ContractManagement = () => {
   const handleDelete = async (contract: Contract) => {
     if (!confirm("¿Está seguro de eliminar este contrato?")) return;
   
+    
     try {
       await apiClient.deleteContract(contract.employeeId, contract.id);
       toast({
