@@ -120,18 +120,19 @@ class ApiClient {
     });
   }
   
-  async updateContract(id: string, contractData: any) {
-    return this.request(`/contratos/${id}`, {
+  async updateContract(employeeId: string, contractId: string, contractData: any) {
+    return this.request(`/contratos/${employeeId}/${contractId}`, {
       method: 'PUT',
       body: JSON.stringify(contractData),
     });
   }
   
-  async deleteContract(id: string) {
-    return this.request(`/contratos/${id}`, {
+  async deleteContract(employeeId: string, contractId: string) {
+    return this.request(`/contratos/${employeeId}/${contractId}`, {
       method: 'DELETE',
     });
   }
+  
 
   // Recuperación de contraseña
   async requestPasswordReset(email: string) {

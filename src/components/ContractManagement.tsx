@@ -93,7 +93,7 @@ const ContractManagement = () => {
 
     try {
       if (editingContract) {
-        await apiClient.updateContract(editingContract.id, contractData);
+        await apiClient.updateContract(formData.employeeId, editingContract.id, contractData);
         toast({
           title: "Éxito",
           description: "Contrato actualizado correctamente",
@@ -128,11 +128,11 @@ const ContractManagement = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (contract: Contract) => {
     if (!confirm("¿Está seguro de eliminar este contrato?")) return;
-
+  
     try {
-      await apiClient.deleteContract(id);
+      await apiClient.deleteContract(contract.employeeId, contract.id);
       toast({
         title: "Éxito",
         description: "Contrato eliminado correctamente",
@@ -146,6 +146,8 @@ const ContractManagement = () => {
       });
     }
   };
+  
+  
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -271,9 +273,10 @@ const ContractManagement = () => {
                         <Button variant="outline" size="sm" onClick={() => handleEdit(contract)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(contract.id)}>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(contract)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                            
                       </div>
                     </TableCell>
                   </TableRow>
