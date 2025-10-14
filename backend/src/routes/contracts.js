@@ -114,10 +114,11 @@ router.post(
 
       const contratoData = {
         ...data,
-        createdBy: req.userId,
+        ...(req.userId ? { createdBy: req.userId } : {}), // solo agrega si existe
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+      
 
       const contratoRef = await db
         .collection('empleados')
