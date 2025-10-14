@@ -35,8 +35,16 @@ interface SearchResult {
 
 const SearchAndExport = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
+  const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+
+  const normalize = (str: string | number) =>
+    str
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -49,76 +57,44 @@ const SearchAndExport = () => {
     }
 
     setSearching(true);
-
     try {
-      // 🔹 Tipamos explícitamente el resultado de la API
       const employees = (await apiClient.getEmployees()) as Employee[];
-      console.log("employees:", employees);
-      if (!Array.isArray(employees)) {
-        throw new Error("La respuesta de empleados no es un arreglo válido");
-      }
+      const contracts = (await apiClient.getContracts()) as Contract[];
 
-      const normalize = (str: string | number) =>
-        str
-          .toString()
-          .trim()
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, ""); // elimina tildes
-      
       const normalizedSearch = normalize(searchTerm);
-      
-      const employee = employees.find((emp) => {
+
+      // 🔹 Filtrar todos los empleados que coincidan
+      const matchedEmployees = employees.filter((emp) => {
         const doc = normalize(emp.nro_documento);
         const name = normalize(emp.nombre);
         const last = normalize(emp.apellido);
-        const fullName = `${name} ${last}`; // combinar nombre y apellido
+        const fullName = `${name} ${last}`;
         return (
           doc.includes(normalizedSearch) ||
           name.includes(normalizedSearch) ||
           last.includes(normalizedSearch) ||
-          fullName.includes(normalizedSearch) // permite "laura gomez"
+          fullName.includes(normalizedSearch)
         );
       });
 
-      
-      console.log("Buscando:", normalizedSearch);
-      console.log("Comparando con:", employees.map(e => ({
-        doc: normalize(e.nro_documento),
-        nombre: normalize(e.nombre),
-        apellido: normalize(e.apellido)
-      })));
-
-      
-      console.log("employee:", employee);
-
-      if (!employee) {
+      if (matchedEmployees.length === 0) {
         toast({
           title: "No encontrado",
           description: "No se encontró ningún empleado con ese criterio",
           variant: "destructive",
         });
-        setSearchResult(null);
+        setSearchResult([]);
         setSearching(false);
         return;
       }
 
-      // 🔹 Tipamos contratos también
-      const contracts = (await apiClient.getContracts()) as Contract[];
-      console.log("contracts:", contracts);
-      if (!Array.isArray(contracts)) {
-        throw new Error("La respuesta de contratos no es un arreglo válido");
-      }
-
-      const employeeContracts = contracts.filter(
-        (contract) => contract.employeeId === employee.id
-      );
-      console.log("employeeContracts:", employeeContracts);
-
-      setSearchResult({
+      // 🔹 Mapear contratos por empleado
+      const results: SearchResult[] = matchedEmployees.map((employee) => ({
         employee,
-        contracts: employeeContracts,
-      });
+        contracts: contracts.filter((contract) => contract.employeeId === employee.id),
+      }));
+
+      setSearchResult(results);
     } catch (error) {
       console.error(error);
       toast({
@@ -127,16 +103,14 @@ const SearchAndExport = () => {
         variant: "destructive",
       });
     }
-
     setSearching(false);
   };
 
-  const exportToPDF = () => {
-    if (!searchResult) return;
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" }).format(amount);
 
+  const exportToPDF = (employee: Employee, contracts: Contract[]) => {
     const doc = new jsPDF();
-    const { employee, contracts } = searchResult;
-
     doc.setFontSize(18);
     doc.text("Reporte de Contratos", 14, 20);
 
@@ -149,10 +123,7 @@ const SearchAndExport = () => {
     const tableData = contracts.map((contract) => [
       new Date(contract.fecha_inicio).toLocaleDateString("es-CO"),
       new Date(contract.fecha_fin).toLocaleDateString("es-CO"),
-      new Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP",
-      }).format(contract.valor_contrato),
+      formatCurrency(contract.valor_contrato),
     ]);
 
     autoTable(doc, {
@@ -162,18 +133,13 @@ const SearchAndExport = () => {
     });
 
     doc.save(`contratos_${employee.nro_documento}.pdf`);
-
     toast({
       title: "Éxito",
-      description: "Reporte PDF descargado correctamente",
+      description: `PDF de ${employee.nombre} descargado correctamente`,
     });
   };
 
-  const exportToExcel = () => {
-    if (!searchResult) return;
-
-    const { employee, contracts } = searchResult;
-
+  const exportToExcel = (employee: Employee, contracts: Contract[]) => {
     const data = contracts.map((contract) => ({
       "Nombre Empleado": `${employee.nombre} ${employee.apellido}`,
       "Nro. Documento": employee.nro_documento,
@@ -189,23 +155,17 @@ const SearchAndExport = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Contratos");
 
     XLSX.writeFile(wb, `contratos_${employee.nro_documento}.xlsx`);
-
     toast({
       title: "Éxito",
-      description: "Reporte Excel descargado correctamente",
+      description: `Excel de ${employee.nombre} descargado correctamente`,
     });
   };
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" }).format(amount);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Búsqueda y Reportes</CardTitle>
-        <CardDescription>
-          Busca empleados por documento o nombre y exporta sus contratos
-        </CardDescription>
+        <CardDescription>Busca empleados por documento o nombre y exporta sus contratos</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex gap-4">
@@ -227,75 +187,73 @@ const SearchAndExport = () => {
           </div>
         </div>
 
-        {searchResult && (
-          <div className="space-y-4">
-            <Card className="bg-accent/20">
+        {searchResult.length > 0 ? (
+          searchResult.map((result) => (
+            <Card key={result.employee.id} className="bg-accent/20 mt-4">
               <CardContent className="pt-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Empleado</p>
-                    <p className="font-medium">
-                      {searchResult.employee.nombre} {searchResult.employee.apellido}
-                    </p>
+                    <p className="font-medium">{result.employee.nombre} {result.employee.apellido}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Documento</p>
-                    <p className="font-medium">{searchResult.employee.nro_documento}</p>
+                    <p className="font-medium">{result.employee.nro_documento}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Cargo</p>
-                    <p className="font-medium">{searchResult.employee.cargo}</p>
+                    <p className="font-medium">{result.employee.cargo || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Contratos</p>
-                    <p className="font-medium">{searchResult.contracts.length}</p>
+                    <p className="font-medium">{result.contracts.length}</p>
                   </div>
                 </div>
+
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={() => exportToPDF(result.employee, result.contracts)} variant="outline">
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Exportar PDF
+                  </Button>
+                  <Button onClick={() => exportToExcel(result.employee, result.contracts)} variant="outline">
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Exportar Excel
+                  </Button>
+                </div>
+
+                {result.contracts.length > 0 ? (
+                  <div className="overflow-x-auto mt-4">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fecha Inicio</TableHead>
+                          <TableHead>Fecha Fin</TableHead>
+                          <TableHead>Valor</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {result.contracts.map((contract) => (
+                          <TableRow key={contract.id}>
+                            <TableCell>{new Date(contract.fecha_inicio).toLocaleDateString("es-CO")}</TableCell>
+                            <TableCell>{new Date(contract.fecha_fin).toLocaleDateString("es-CO")}</TableCell>
+                            <TableCell>{formatCurrency(contract.valor_contrato)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">
+                    Este empleado no tiene contratos registrados
+                  </p>
+                )}
               </CardContent>
             </Card>
-
-            <div className="flex gap-2">
-              <Button onClick={exportToPDF} variant="outline">
-                <FileDown className="h-4 w-4 mr-2" />
-                Exportar PDF
-              </Button>
-              <Button onClick={exportToExcel} variant="outline">
-                <FileDown className="h-4 w-4 mr-2" />
-                Exportar Excel
-              </Button>
-            </div>
-
-            {searchResult.contracts.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha Inicio</TableHead>
-                      <TableHead>Fecha Fin</TableHead>
-                      <TableHead>Valor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {searchResult.contracts.map((contract) => (
-                      <TableRow key={contract.id}>
-                        <TableCell>
-                          {new Date(contract.fecha_inicio).toLocaleDateString("es-CO")}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(contract.fecha_fin).toLocaleDateString("es-CO")}
-                        </TableCell>
-                        <TableCell>{formatCurrency(contract.valor_contrato)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">
-                Este empleado no tiene contratos registrados
-              </p>
-            )}
-          </div>
+          ))
+        ) : (
+          <p className="text-center text-muted-foreground py-8">
+            Ingresa un término de búsqueda para ver resultados
+          </p>
         )}
       </CardContent>
     </Card>
