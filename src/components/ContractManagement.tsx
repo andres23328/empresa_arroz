@@ -81,41 +81,65 @@ const ContractManagement = () => {
     setEditingContract(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const showError = (msg: string) => {
+  toast({
+    title: "Error en los datos",
+    description: msg,
+    variant: "destructive",
+  });
+};
 
-    const contractData = {
-      employeeId: formData.employeeId,
-      fecha_inicio: formData.fecha_inicio,
-      fecha_fin: formData.fecha_fin,
-      valor_contrato: parseFloat(formData.valor_contrato),
-    };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      if (editingContract) {
-        await apiClient.updateContract(formData.employeeId, editingContract.id, contractData);
-        toast({
-          title: "Éxito",
-          description: "Contrato actualizado correctamente",
-        });
-      } else {
-        await apiClient.createContract(contractData);
-        toast({
-          title: "Éxito",
-          description: "Contrato creado correctamente",
-        });
-      }
-      setDialogOpen(false);
-      resetForm();
-      fetchData();
-    } catch (error: any) {
+  // --- VALIDACIONES ---
+  if (!formData.employeeId.trim()) return showError("Debe seleccionar un empleado");
+  if (!formData.fecha_inicio) return showError("Debe ingresar la fecha de inicio del contrato");
+  if (!formData.fecha_fin) return showError("Debe ingresar la fecha de finalización del contrato");
+
+  const fechaInicio = new Date(formData.fecha_inicio);
+  const fechaFin = new Date(formData.fecha_fin);
+  if (fechaFin < fechaInicio)
+    return showError("La fecha de finalización no puede ser anterior a la fecha de inicio");
+
+  if (!formData.valor_contrato)
+    return showError("Debe ingresar el valor del contrato");
+
+  const valorContrato = parseFloat(formData.valor_contrato);
+  if (isNaN(valorContrato) || valorContrato <= 0)
+    return showError("El valor del contrato debe ser un número positivo");
+
+  // --- Si pasa las validaciones ---
+  const contractData = {
+    employeeId: formData.employeeId,
+    fecha_inicio: formData.fecha_inicio,
+    fecha_fin: formData.fecha_fin,
+    valor_contrato: valorContrato,
+  };
+
+  try {
+    if (editingContract) {
+      await apiClient.updateContract(formData.employeeId, editingContract.id, contractData);
       toast({
-        title: "Error",
-        description: error.message || "Ha ocurrido un error",
-        variant: "destructive",
+        title: "Éxito",
+        description: "Contrato actualizado correctamente",
+      });
+    } else {
+      await apiClient.createContract(contractData);
+      toast({
+        title: "Éxito",
+        description: "Contrato creado correctamente",
       });
     }
-  };
+
+    setDialogOpen(false);
+    resetForm();
+    fetchData();
+  } catch (error: any) {
+    showError(error.message || "Ha ocurrido un error al guardar el contrato");
+  }
+};
+
 
   const handleEdit = (contract: Contract) => {
     setEditingContract(contract);
