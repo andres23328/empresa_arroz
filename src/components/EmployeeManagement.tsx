@@ -82,28 +82,64 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
   // --- Validaciones ---
-  if (!formData.nro_documento.trim()) return showError("El número de documento es obligatorio");
-  if (!formData.nombre.trim()) return showError("El nombre es obligatorio");
-  if (!formData.apellido.trim()) return showError("El apellido es obligatorio");
-  if (!formData.genero) return showError("Debe seleccionar un género");
-  if (!formData.cargo) return showError("Debe seleccionar un cargo");
-  if (!formData.correo.trim()) return showError("El correo es obligatorio");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo))
+  const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+  const soloNumeros = /^\d+$/;
+  const telefonoRegex = /^\d{7,15}$/;
+
+  // Documento
+  if (!formData.nro_documento.trim())
+    return showError("El número de documento es obligatorio");
+  if (!soloNumeros.test(formData.nro_documento))
+    return showError("El número de documento solo puede contener dígitos");
+
+  // Nombre
+  if (!formData.nombre.trim())
+    return showError("El nombre es obligatorio");
+  if (!soloLetras.test(formData.nombre))
+    return showError("El nombre solo puede contener letras");
+  if (formData.nombre.trim().length < 3)
+    return showError("El nombre debe tener al menos 3 letras");
+
+  // Apellido
+  if (!formData.apellido.trim())
+    return showError("El apellido es obligatorio");
+  if (!soloLetras.test(formData.apellido))
+    return showError("El apellido solo puede contener letras");
+  if (formData.apellido.trim().length < 3)
+    return showError("El apellido debe tener al menos 3 letras");
+
+  // Edad
+  const edad = parseInt(formData.edad);
+  if (isNaN(edad) || edad < 18 || edad > 80)
+    return showError("La edad debe ser un número entre 18 y 80");
+
+  // Género
+  if (!formData.genero)
+    return showError("Debe seleccionar un género");
+
+  // Cargo
+  if (!formData.cargo)
+    return showError("Debe seleccionar un cargo");
+
+  // Correo
+  if (!formData.correo.trim())
+    return showError("El correo es obligatorio");
+  if (!correoRegex.test(formData.correo))
     return showError("El correo electrónico no es válido");
 
-  const edad = parseInt(formData.edad);
-  if (isNaN(edad) || edad <= 0 || edad > 100)
-    return showError("La edad debe ser un número entre 1 y 100");
-
-  if (!formData.nro_contacto.trim()) return showError("El número de contacto es obligatorio");
-  if (!/^\d{7,15}$/.test(formData.nro_contacto))
+  // Teléfono
+  if (!formData.nro_contacto.trim())
+    return showError("El número de contacto es obligatorio");
+  if (!telefonoRegex.test(formData.nro_contacto))
     return showError("El número de contacto debe tener entre 7 y 15 dígitos");
 
+  // Estado
+  if (!formData.estado)
+    return showError("Debe seleccionar un estado válido");
+
   // --- Si pasa todas las validaciones ---
-  const employeeData = {
-    ...formData,
-    edad,
-  };
+  const employeeData = { ...formData, edad };
 
   try {
     if (editingEmployee) {
@@ -127,10 +163,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-// Pequeña función auxiliar para mostrar los errores
+// función auxiliar para mostrar errores
 const showError = (msg: string) => {
   toast({
-    title: "Error en los datos",
+    title: "Error",
     description: msg,
     variant: "destructive",
   });
