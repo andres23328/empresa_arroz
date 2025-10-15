@@ -70,12 +70,11 @@ const SearchAndExport = () => {
         const last = normalize(emp.apellido);
 
         return (
-          doc.startsWith(normalizedSearch) || // Documento empieza con
-          name.startsWith(normalizedSearch) || // Nombre empieza con
-          last.startsWith(normalizedSearch) // Apellido empieza con
+          doc.startsWith(normalizedSearch) ||
+          name.startsWith(normalizedSearch) ||
+          last.startsWith(normalizedSearch)
         );
       });
-
 
       if (matchedEmployees.length === 0) {
         toast({
@@ -161,16 +160,87 @@ const SearchAndExport = () => {
     });
   };
 
+  // 🔹 NUEVO: Exportar todos los empleados (PDF)
+  const exportAllToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Reporte de Contratos - Todos los Empleados", 14, 20);
+
+    let currentY = 30;
+
+    searchResult.forEach((result, index) => {
+      const { employee, contracts } = result;
+
+      doc.setFontSize(12);
+      doc.text(`${index + 1}. ${employee.nombre} ${employee.apellido}`, 14, currentY);
+      doc.text(`Documento: ${employee.nro_documento}`, 14, currentY + 7);
+      doc.text(`Cargo: ${employee.cargo || "N/A"}`, 14, currentY + 14);
+      doc.text(`Total de Contratos: ${contracts.length}`, 14, currentY + 21);
+
+      const tableData = contracts.map((contract) => [
+        new Date(contract.fecha_inicio).toLocaleDateString("es-CO"),
+        new Date(contract.fecha_fin).toLocaleDateString("es-CO"),
+        formatCurrency(contract.valor_contrato),
+      ]);
+
+      autoTable(doc, {
+        head: [["Fecha Inicio", "Fecha Fin", "Valor"]],
+        body: tableData,
+        startY: currentY + 28,
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+    });
+
+    doc.save("reporte_general_empleados.pdf");
+    toast({
+      title: "Éxito",
+      description: "PDF general descargado correctamente",
+    });
+  };
+
+  // 🔹 NUEVO: Exportar todos los empleados (Excel)
+  const exportAllToExcel = () => {
+    const data: any[] = [];
+
+    searchResult.forEach((result) => {
+      const { employee, contracts } = result;
+      contracts.forEach((contract) => {
+        data.push({
+          "Nombre Empleado": `${employee.nombre} ${employee.apellido}`,
+          "Nro. Documento": employee.nro_documento,
+          Cargo: employee.cargo || "",
+          Correo: employee.correo || "",
+          "Fecha Inicio": new Date(contract.fecha_inicio).toLocaleDateString("es-CO"),
+          "Fecha Fin": new Date(contract.fecha_fin).toLocaleDateString("es-CO"),
+          "Valor Contrato": contract.valor_contrato,
+        });
+      });
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contratos");
+
+    XLSX.writeFile(wb, `reporte_general_empleados.xlsx`);
+    toast({
+      title: "Éxito",
+      description: "Excel general descargado correctamente",
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Búsqueda y Reportes</CardTitle>
-        <CardDescription>Busca empleados por documento o nombre y exporta sus contratos</CardDescription>
+        <CardDescription>
+          Busca empleados por documento o nombre y exporta sus contratos
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex gap-4">
           <div className="flex-1 space-y-2">
-            <Label htmlFor="search">Nro. Documento, Nombre o apellido</Label>
+            <Label htmlFor="search">Nro. Documento, Nombre o Apellido</Label>
             <Input
               id="search"
               placeholder="Ej: 123456789 o Alejandro Suarez"
@@ -187,6 +257,20 @@ const SearchAndExport = () => {
           </div>
         </div>
 
+        {/* 🔹 Botones globales si hay más de un resultado */}
+        {searchResult.length > 1 && (
+          <div className="flex justify-center gap-4 mt-4">
+            <Button onClick={exportAllToPDF} variant="outline">
+              <FileDown className="h-4 w-4 mr-2" />
+              Exportar Todo (PDF)
+            </Button>
+            <Button onClick={exportAllToExcel} variant="outline">
+              <FileDown className="h-4 w-4 mr-2" />
+              Exportar Todo (Excel)
+            </Button>
+          </div>
+        )}
+
         {searchResult.length > 0 ? (
           searchResult.map((result) => (
             <Card key={result.employee.id} className="bg-accent/20 mt-4">
@@ -194,7 +278,9 @@ const SearchAndExport = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Empleado</p>
-                    <p className="font-medium">{result.employee.nombre} {result.employee.apellido}</p>
+                    <p className="font-medium">
+                      {result.employee.nombre} {result.employee.apellido}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Documento</p>
@@ -211,11 +297,21 @@ const SearchAndExport = () => {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <Button onClick={() => exportToPDF(result.employee, result.contracts)} variant="outline">
+                  <Button
+                    onClick={() =>
+                      exportToPDF(result.employee, result.contracts)
+                    }
+                    variant="outline"
+                  >
                     <FileDown className="h-4 w-4 mr-2" />
                     Exportar PDF
                   </Button>
-                  <Button onClick={() => exportToExcel(result.employee, result.contracts)} variant="outline">
+                  <Button
+                    onClick={() =>
+                      exportToExcel(result.employee, result.contracts)
+                    }
+                    variant="outline"
+                  >
                     <FileDown className="h-4 w-4 mr-2" />
                     Exportar Excel
                   </Button>
@@ -234,9 +330,19 @@ const SearchAndExport = () => {
                       <TableBody>
                         {result.contracts.map((contract) => (
                           <TableRow key={contract.id}>
-                            <TableCell>{new Date(contract.fecha_inicio).toLocaleDateString("es-CO")}</TableCell>
-                            <TableCell>{new Date(contract.fecha_fin).toLocaleDateString("es-CO")}</TableCell>
-                            <TableCell>{formatCurrency(contract.valor_contrato)}</TableCell>
+                            <TableCell>
+                              {new Date(
+                                contract.fecha_inicio
+                              ).toLocaleDateString("es-CO")}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(
+                                contract.fecha_fin
+                              ).toLocaleDateString("es-CO")}
+                            </TableCell>
+                            <TableCell>
+                              {formatCurrency(contract.valor_contrato)}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
