@@ -109,6 +109,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   if (isNaN(valorContrato) || valorContrato <= 0)
     return showError("El valor del contrato debe ser un número positivo");
 
+  // ✅ Validación adicional: mínimo 500,000
+  if (valorContrato < 500000)
+    return showError("El valor del contrato no puede ser menor a $500,000");
+
   // --- Si pasa las validaciones ---
   const contractData = {
     employeeId: formData.employeeId,
@@ -139,6 +143,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     showError(error.message || "Ha ocurrido un error al guardar el contrato");
   }
 };
+
 
 
   const handleEdit = (contract: Contract) => {
