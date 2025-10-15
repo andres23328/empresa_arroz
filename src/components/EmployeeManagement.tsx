@@ -86,6 +86,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
   const soloNumeros = /^\d+$/;
   const telefonoRegex = /^\d{7,15}$/;
+  const textoValido = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,;:!?()'"-]+$/;
 
   // Documento
   if (!formData.nro_documento.trim())
@@ -138,6 +139,14 @@ const handleSubmit = async (e: React.FormEvent) => {
   if (!formData.estado)
     return showError("Debe seleccionar un estado válido");
 
+  // ✅ Observaciones
+  if (formData.observaciones.trim().length > 0) {
+    if (formData.observaciones.trim().length < 7)
+      return showError("La observación debe tener al menos 7 caracteres");
+    if (!textoValido.test(formData.observaciones))
+      return showError("La observación solo puede contener texto válido (letras, números, espacios y signos básicos)");
+  }
+
   // --- Si pasa todas las validaciones ---
   const employeeData = { ...formData, edad };
 
@@ -171,6 +180,7 @@ const showError = (msg: string) => {
     variant: "destructive",
   });
 };
+
 
 
   const handleEdit = (employee: Employee) => {
