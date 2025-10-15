@@ -78,39 +78,64 @@ const EmployeeManagement = () => {
     setEditingEmployee(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const employeeData = {
-      ...formData,
-      edad: parseInt(formData.edad),
-    };
+  // --- Validaciones ---
+  if (!formData.nro_documento.trim()) return showError("El número de documento es obligatorio");
+  if (!formData.nombre.trim()) return showError("El nombre es obligatorio");
+  if (!formData.apellido.trim()) return showError("El apellido es obligatorio");
+  if (!formData.genero) return showError("Debe seleccionar un género");
+  if (!formData.cargo) return showError("Debe seleccionar un cargo");
+  if (!formData.correo.trim()) return showError("El correo es obligatorio");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo))
+    return showError("El correo electrónico no es válido");
 
-    try {
-      if (editingEmployee) {
-        await apiClient.updateEmployee(editingEmployee.id, employeeData);
-        toast({
-          title: "Éxito",
-          description: "Empleado actualizado correctamente",
-        });
-      } else {
-        await apiClient.createEmployee(employeeData);
-        toast({
-          title: "Éxito",
-          description: "Empleado creado correctamente",
-        });
-      }
-      setDialogOpen(false);
-      resetForm();
-      fetchEmployees();
-    } catch (error: any) {
+  const edad = parseInt(formData.edad);
+  if (isNaN(edad) || edad <= 0 || edad > 100)
+    return showError("La edad debe ser un número entre 1 y 100");
+
+  if (!formData.nro_contacto.trim()) return showError("El número de contacto es obligatorio");
+  if (!/^\d{7,15}$/.test(formData.nro_contacto))
+    return showError("El número de contacto debe tener entre 7 y 15 dígitos");
+
+  // --- Si pasa todas las validaciones ---
+  const employeeData = {
+    ...formData,
+    edad,
+  };
+
+  try {
+    if (editingEmployee) {
+      await apiClient.updateEmployee(editingEmployee.id, employeeData);
       toast({
-        title: "Error",
-        description: error.message || "Ha ocurrido un error",
-        variant: "destructive",
+        title: "Éxito",
+        description: "Empleado actualizado correctamente",
+      });
+    } else {
+      await apiClient.createEmployee(employeeData);
+      toast({
+        title: "Éxito",
+        description: "Empleado creado correctamente",
       });
     }
-  };
+    setDialogOpen(false);
+    resetForm();
+    fetchEmployees();
+  } catch (error: any) {
+    showError(error.message || "Ha ocurrido un error");
+  }
+};
+
+// Pequeña función auxiliar para mostrar los errores
+const showError = (msg: string) => {
+  toast({
+    title: "Error en los datos",
+    description: msg,
+    variant: "destructive",
+  });
+};
+
 
   const handleEdit = (employee: Employee) => {
     setEditingEmployee(employee);
