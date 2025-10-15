@@ -2,110 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 🌿 Green Harmony Theme - Fresh, modern, and nature-inspired */
 
 @layer base {
   :root {
-    /* Rice mill theme - earthy, agricultural colors */
-    --background: 45 30% 96%;
-    --foreground: 30 25% 15%;
+    /* Base tones */
+    --background: 90 20% 96%; /* verde muy claro / casi blanco */
+    --foreground: 140 20% 15%; /* verde oscuro grisáceo */
 
-    --card: 45 35% 98%;
-    --card-foreground: 30 25% 15%;
+    --card: 90 25% 98%;
+    --card-foreground: 140 20% 15%;
 
-    --popover: 45 35% 98%;
-    --popover-foreground: 30 25% 15%;
+    --popover: 90 25% 98%;
+    --popover-foreground: 140 20% 15%;
 
-    /* Primary: Rich golden brown (rice grains) */
-    --primary: 35 55% 45%;
-    --primary-foreground: 45 30% 98%;
+    /* Primary: Soft green jade */
+    --primary: 145 45% 40%;
+    --primary-foreground: 90 25% 98%;
 
-    /* Secondary: Green (rice fields) */
-    --secondary: 95 35% 45%;
-    --secondary-foreground: 45 30% 98%;
+    /* Secondary: Mint green */
+    --secondary: 155 40% 45%;
+    --secondary-foreground: 90 25% 98%;
 
-    /* Muted: Light sand */
-    --muted: 40 25% 88%;
-    --muted-foreground: 30 20% 40%;
+    /* Muted: Light sage */
+    --muted: 120 15% 85%;
+    --muted-foreground: 140 15% 35%;
 
-    /* Accent: Amber (harvest) */
-    --accent: 40 65% 55%;
-    --accent-foreground: 30 25% 15%;
+    /* Accent: Fresh lime */
+    --accent: 100 50% 55%;
+    --accent-foreground: 140 25% 15%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 45 30% 98%;
+    --destructive-foreground: 90 25% 98%;
 
-    --border: 40 20% 85%;
-    --input: 40 20% 85%;
-    --ring: 35 55% 45%;
+    --border: 120 15% 80%;
+    --input: 120 15% 80%;
+    --ring: 145 45% 40%;
 
     --radius: 0.75rem;
 
-    /* Success: Deep green */
-    --success: 120 40% 40%;
-    --success-foreground: 45 30% 98%;
+    /* Success: Deep emerald */
+    --success: 145 50% 35%;
+    --success-foreground: 90 25% 98%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(35 55% 45%), hsl(40 65% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(95 35% 45%), hsl(100 40% 50%));
-    
+    --gradient-primary: linear-gradient(135deg, hsl(145 45% 40%), hsl(155 40% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(160 35% 45%), hsl(120 40% 50%));
+
     /* Shadows */
-    --shadow-soft: 0 2px 8px hsla(30 25% 15% / 0.1);
-    --shadow-medium: 0 4px 16px hsla(30 25% 15% / 0.12);
-    
+    --shadow-soft: 0 2px 8px hsla(140 25% 15% / 0.08);
+    --shadow-medium: 0 4px 16px hsla(140 25% 15% / 0.12);
+
     /* Sidebar */
-    --sidebar-background: 45 35% 98%;
-    --sidebar-foreground: 30 25% 20%;
-    --sidebar-primary: 35 55% 45%;
-    --sidebar-primary-foreground: 45 30% 98%;
-    --sidebar-accent: 40 25% 92%;
-    --sidebar-accent-foreground: 30 25% 20%;
-    --sidebar-border: 40 20% 88%;
-    --sidebar-ring: 35 55% 45%;
+    --sidebar-background: 90 25% 98%;
+    --sidebar-foreground: 140 20% 20%;
+    --sidebar-primary: 145 45% 40%;
+    --sidebar-primary-foreground: 90 25% 98%;
+    --sidebar-accent: 120 20% 92%;
+    --sidebar-accent-foreground: 140 20% 20%;
+    --sidebar-border: 120 15% 85%;
+    --sidebar-ring: 145 45% 40%;
   }
 
   .dark {
-    --background: 30 25% 12%;
-    --foreground: 45 30% 95%;
+    --background: 140 25% 12%;
+    --foreground: 90 25% 95%;
 
-    --card: 30 25% 15%;
-    --card-foreground: 45 30% 95%;
+    --card: 140 25% 15%;
+    --card-foreground: 90 25% 95%;
 
-    --popover: 30 25% 15%;
-    --popover-foreground: 45 30% 95%;
+    --popover: 140 25% 15%;
+    --popover-foreground: 90 25% 95%;
 
-    --primary: 40 65% 55%;
-    --primary-foreground: 30 25% 12%;
+    --primary: 145 55% 50%;
+    --primary-foreground: 140 25% 10%;
 
-    --secondary: 95 30% 35%;
-    --secondary-foreground: 45 30% 95%;
+    --secondary: 155 35% 40%;
+    --secondary-foreground: 90 25% 95%;
 
-    --muted: 30 20% 20%;
-    --muted-foreground: 45 20% 65%;
+    --muted: 140 15% 20%;
+    --muted-foreground: 90 20% 70%;
 
-    --accent: 40 70% 60%;
-    --accent-foreground: 30 25% 12%;
+    --accent: 100 55% 55%;
+    --accent-foreground: 140 25% 10%;
 
     --destructive: 0 62% 45%;
-    --destructive-foreground: 45 30% 95%;
+    --destructive-foreground: 90 25% 95%;
 
-    --border: 30 20% 25%;
-    --input: 30 20% 25%;
-    --ring: 40 65% 55%;
-    
-    --success: 120 35% 45%;
-    --success-foreground: 45 30% 95%;
-    
-    --sidebar-background: 30 25% 15%;
-    --sidebar-foreground: 45 30% 90%;
-    --sidebar-primary: 40 65% 55%;
-    --sidebar-primary-foreground: 30 25% 12%;
-    --sidebar-accent: 30 20% 22%;
-    --sidebar-accent-foreground: 45 30% 90%;
-    --sidebar-border: 30 20% 25%;
-    --sidebar-ring: 40 65% 55%;
+    --border: 140 15% 25%;
+    --input: 140 15% 25%;
+    --ring: 145 55% 50%;
+
+    --success: 145 45% 40%;
+    --success-foreground: 90 25% 95%;
+
+    --sidebar-background: 140 25% 15%;
+    --sidebar-foreground: 90 25% 90%;
+    --sidebar-primary: 145 55% 50%;
+    --sidebar-primary-foreground: 140 25% 10%;
+    --sidebar-accent: 140 20% 22%;
+    --sidebar-accent-foreground: 90 25% 90%;
+    --sidebar-border: 140 15% 25%;
+    --sidebar-ring: 145 55% 50%;
   }
 }
 
