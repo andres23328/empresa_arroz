@@ -63,19 +63,19 @@ const SearchAndExport = () => {
 
       const normalizedSearch = normalize(searchTerm);
 
-      // 🔹 Filtrar todos los empleados que coincidan
+      // 🔹 Filtrar empleados cuyo nombre, apellido o documento EMPIECE con el texto buscado
       const matchedEmployees = employees.filter((emp) => {
         const doc = normalize(emp.nro_documento);
         const name = normalize(emp.nombre);
         const last = normalize(emp.apellido);
-        const fullName = `${name} ${last}`;
+
         return (
-          doc.includes(normalizedSearch) ||
-          name.includes(normalizedSearch) ||
-          last.includes(normalizedSearch) ||
-          fullName.includes(normalizedSearch)
+          doc.startsWith(normalizedSearch) || // Documento empieza con
+          name.startsWith(normalizedSearch) || // Nombre empieza con
+          last.startsWith(normalizedSearch) // Apellido empieza con
         );
       });
+
 
       if (matchedEmployees.length === 0) {
         toast({
@@ -170,10 +170,10 @@ const SearchAndExport = () => {
       <CardContent className="space-y-6">
         <div className="flex gap-4">
           <div className="flex-1 space-y-2">
-            <Label htmlFor="search">Nro. Documento o Nombre</Label>
+            <Label htmlFor="search">Nro. Documento, Nombre o apellido</Label>
             <Input
               id="search"
-              placeholder="Ej: 123456789 o Juan Pérez"
+              placeholder="Ej: 123456789 o Alejandro Suarez"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
