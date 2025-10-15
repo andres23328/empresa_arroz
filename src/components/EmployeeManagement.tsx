@@ -93,6 +93,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     return showError("El número de documento es obligatorio");
   if (!soloNumeros.test(formData.nro_documento))
     return showError("El número de documento solo puede contener dígitos");
+  if (formData.nro_documento.trim().length < 4)
+    return showError("El número de documento debe tener al menos 4 dígitos");
 
   // Nombre
   if (!formData.nombre.trim())
@@ -139,7 +141,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   if (!formData.estado)
     return showError("Debe seleccionar un estado válido");
 
-  // ✅ Observaciones
+  // ✅ Observaciones (opcional)
   if (formData.observaciones.trim().length > 0) {
     if (formData.observaciones.trim().length < 7)
       return showError("La observación debe tener al menos 7 caracteres");
@@ -180,6 +182,7 @@ const showError = (msg: string) => {
     variant: "destructive",
   });
 };
+
 
 
 
