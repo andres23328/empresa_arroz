@@ -86,15 +86,28 @@ const handleSubmit = async (e: React.FormEvent) => {
   const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
   const soloNumeros = /^\d+$/;
   const telefonoRegex = /^\d{7,15}$/;
-  const textoValido = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,;:!?()'"-]+$/;
+  const repetidosRegex = /^(\d)\1+$/; // detecta repeticiones como 0000, 1111, etc.
+  const soloTexto = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
   // Documento
   if (!formData.nro_documento.trim())
     return showError("El número de documento es obligatorio");
   if (!soloNumeros.test(formData.nro_documento))
     return showError("El número de documento solo puede contener dígitos");
-  if (formData.nro_documento.trim().length < 4)
+  if (formData.nro_documento.length < 4)
     return showError("El número de documento debe tener al menos 4 dígitos");
+  if (repetidosRegex.test(formData.nro_documento))
+    return showError("El número de documento no puede tener todos los dígitos iguales");
+
+  // Verificar si el documento ya existe
+  const empleados = await apiClient.getEmployees(); // asumiendo que retorna todos los empleados
+  const documentoExistente = empleados.find(
+    (emp: any) =>
+      emp.nro_documento === formData.nro_documento &&
+      (!editingEmployee || emp.id !== editingEmployee.id)
+  );
+  if (documentoExistente)
+    return showError("Ya existe un empleado con este número de documento");
 
   // Nombre
   if (!formData.nombre.trim())
@@ -141,12 +154,12 @@ const handleSubmit = async (e: React.FormEvent) => {
   if (!formData.estado)
     return showError("Debe seleccionar un estado válido");
 
-  // ✅ Observaciones (opcional)
-  if (formData.observaciones.trim().length > 0) {
+  // Observaciones (opcional)
+  if (formData.observaciones.trim() !== "") {
+    if (!soloTexto.test(formData.observaciones))
+      return showError("Las observaciones solo pueden contener letras y espacios");
     if (formData.observaciones.trim().length < 7)
-      return showError("La observación debe tener al menos 7 caracteres");
-    if (!textoValido.test(formData.observaciones))
-      return showError("La observación solo puede contener texto válido (letras, números, espacios y signos básicos)");
+      return showError("Las observaciones deben tener al menos 7 letras si se ingresan");
   }
 
   // --- Si pasa todas las validaciones ---
@@ -174,7 +187,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-// función auxiliar para mostrar errores
+// Función auxiliar para mostrar errores
 const showError = (msg: string) => {
   toast({
     title: "Error",
@@ -182,6 +195,7 @@ const showError = (msg: string) => {
     variant: "destructive",
   });
 };
+
 
 
 
