@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { apiClient } from "@/integrations/firebase/apiClient"; // tu cliente de API
+import { apiClient } from "@/integrations/firebase/apiClient";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -15,6 +15,27 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 🔒 Función de validación de contraseña segura
+  const validatePassword = (password: string) => {
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[@$!%*?&]/.test(password);
+
+    if (password.length < minLength)
+      return "La contraseña debe tener al menos 8 caracteres";
+    if (!hasUppercase)
+      return "Debe incluir al menos una letra mayúscula";
+    if (!hasLowercase)
+      return "Debe incluir al menos una letra minúscula";
+    if (!hasNumber)
+      return "Debe incluir al menos un número";
+    if (!hasSpecial)
+      return "Debe incluir al menos un carácter especial (@, $, !, %, *, ?, &)";
+    return null;
+  };
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +48,17 @@ export default function ResetPassword() {
       });
       return;
     }
-    console.log("Token recibido:", token);
-    console.log("Contraseña:", password);
+
+    // 🔍 Validación de contraseñas
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast({
+        title: "Contraseña inválida",
+        description: passwordError,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast({
@@ -63,9 +93,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md shadow-[var(--shadow-medium)]">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-bold">Restablecer Contraseña</CardTitle>
-          <CardDescription>
-            Ingresa tu nueva contraseña para continuar
-          </CardDescription>
+          <CardDescription>Ingresa tu nueva contraseña para continuar</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleReset} className="space-y-4">
@@ -79,6 +107,9 @@ export default function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                Debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y símbolo.
+              </p>
             </div>
 
             <div className="space-y-2">
